@@ -6,20 +6,20 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: (devel)
   creationTimestamp: null
-  name: endpoints.onecloud.yunion.io
+  name: generalservices.onecloud.yunion.io
 spec:
   group: onecloud.yunion.io
   names:
-    kind: Endpoint
-    listKind: EndpointList
-    plural: endpoints
-    singular: endpoint
+    kind: GeneralService
+    listKind: GeneralServiceList
+    plural: generalservices
+    singular: generalservice
   scope: Namespaced
   subresources:
     status: {}
   validation:
     openAPIV3Schema:
-      description: Endpoint is the Schema for the endpoints API
+      description: GeneralService is the Schema for the generalservices API
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation
@@ -34,69 +34,67 @@ spec:
         metadata:
           type: object
         spec:
-          description: EndpointSpec defines the desired state of Endpoint
+          description: GeneralServiceSpec defines the desired state of GeneralServiceSpec
           properties:
-            disabled:
-              type: boolean
             maxRetryTimes:
               description: Nil or Non-positive number means unlimited.
               format: int32
               type: integer
-            name:
-              type: string
-            serviceCertificate:
-              description: Service certificate id or name
-              type: string
-            url:
-              description: Url of this Endpoint
-              properties:
-                host:
-                  properties:
-                    reference:
-                      properties:
-                        fieldPath:
-                          type: string
-                        group:
-                          type: string
-                        kind:
-                          type: string
-                        name:
-                          type: string
-                        namespace:
-                          type: string
-                        version:
-                          type: string
-                      required:
-                      - fieldPath
-                      - kind
-                      - name
-                      - namespace
-                      type: object
-                    value:
-                      type: string
-                  type: object
-                port:
-                  format: int32
-                  type: integer
-                prefix:
-                  type: string
-                protocol:
-                  type: string
+            params:
+              additionalProperties:
+                properties:
+                  isYaml:
+                    description: IsYaml determines whether the string in IntOrStringStore
+                      is a yaml string
+                    type: boolean
+                  reference:
+                    properties:
+                      fieldPath:
+                        type: string
+                      group:
+                        type: string
+                      kind:
+                        type: string
+                      name:
+                        type: string
+                      namespace:
+                        type: string
+                      version:
+                        type: string
+                    required:
+                    - fieldPath
+                    - kind
+                    - name
+                    - namespace
+                    type: object
+                  value:
+                    anyOf:
+                    - type: integer
+                    - type: string
+                    type: object
+                    x-kubernetes-int-or-string: true
+                type: object
               type: object
+            releaseId:
+              type: string
+            serviceId:
+              type: string
           required:
-          - url
+          - params
           type: object
         status:
-          description: EndpointStatus defines the observed state of Endpoint
+          description: GeneralServiceStatus defines the observed state of GeneralService
           properties:
             externalInfo:
-              description: ExternalInfoBase describe the corresponding resource's
-                info in external system
               properties:
                 action:
                   description: Action indicate the latest action for external vm.
                   type: string
+                externalId:
+                  type: string
                 id:
+                  type: string
+                primaryKey:
                   type: string
                 status:
                   type: string

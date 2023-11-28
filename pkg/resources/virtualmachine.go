@@ -16,8 +16,10 @@ package resources
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/go-logr/logr"
 
@@ -169,6 +171,54 @@ func (vi VirtualMachine) DefaultRecreatePolicy() *onecloudv1.RecreatePolicy {
 func (vi VirtualMachine) Start(ctx context.Context) (onecloudv1.ExternalInfoBase, error) {
 	_, s, e := RequestVM.Operation(OperStart).Apply(ctx, vi.VirtualMachine.Status.ExternalInfo.Id, nil)
 	return s, e
+}
+
+func (vi VirtualMachine) MakeSshable(ctx context.Context) (onecloudv1.ExternalInfoBase, error) {
+	count := 0
+	for {
+		if count >= 5 {
+			break
+		}
+		if vi.isSshable(ctx) {
+			return vi.VirtualMachine.Status.GetBaseExternalInfo(), nil
+		}
+
+		if count == 0 {
+			vi.logger.V(1).Info("Try to make ssh", "guest", vi.VirtualMachine.Status.ExternalInfo.Id)
+
+			vm := vi.VirtualMachine
+			var serverDetail comapi.ServerDetails
+
+			vmJson, _, err := RequestVMGetDetails.Apply(ctx, vm.Status.ExternalInfo.Id, nil)
+			if err != nil {
+				return onecloudv1.ExternalInfoBase{}, err
+			}
+			err = vmJson.Unmarshal(&serverDetail)
+			if err != nil {
+				return onecloudv1.ExternalInfoBase{}, err
+			}
+
+			loginKey := serverDetail.Metadata["login_key"]
+			password, _ := onecloudutils.DescryptAESBase64(serverDetail.Id, loginKey)
+
+			vi.logger.V(1).Info("Guest is running, make ssh", "login_key", loginKey, "pwd", password)
+
+			params := jsonutils.NewDict()
+			params.Set("user", jsonutils.NewString("root"))
+			params.Set("port", jsonutils.NewInt(22))
+			params.Set("password", jsonutils.NewString(password))
+
+			_, s, e := RequestVM.Operation(OperMakeSshable).Apply(ctx, vi.VirtualMachine.Status.ExternalInfo.Id, params)
+			if e != nil {
+				return s, e
+			}
+		}
+
+		time.Sleep(time.Second * 5)
+		count++
+	}
+
+	return onecloudv1.ExternalInfoBase{}, errors.New("make ssh timeout")
 }
 
 func (vi VirtualMachine) Stop(ctx context.Context) (onecloudv1.ExternalInfoBase, error) {
@@ -548,4 +598,22 @@ func (vi VirtualMachine) needSync(info onecloudv1.ExternalInfoBase) bool {
 
 func (vi VirtualMachine) isStopped(info onecloudv1.ExternalInfoBase) bool {
 	return onecloudutils.IsInStringArray(info.Status, vmStopStatus)
+}
+
+func (vi VirtualMachine) isSshable(ctx context.Context) bool {
+	ret, _, _ := RequestVM.Operation(OperSshable).Apply(ctx, vi.VirtualMachine.Status.ExternalInfo.Id, nil)
+
+	vi.logger.V(1).Info("Check sshable", "guest", vi.VirtualMachine.Status.ExternalInfo.Id, "result", ret)
+
+	methodTrieds, err := ret.GetArray("method_tried")
+	if err != nil {
+		return false
+	}
+	for _, methodTrid := range methodTrieds {
+		sshable, _ := methodTrid.Bool("sshable")
+		if sshable {
+			return true
+		}
+	}
+	return false
 }

@@ -182,3 +182,9 @@ func NewCloudeventManager(keyword, keywordPlural string, columns, adminColumns [
 		BaseManager: *modulebase.NewBaseManager("cloudevent", "", "", columns, adminColumns),
 		Keyword:     keyword, KeywordPlural: keywordPlural}
 }
+
+func NewGeneralServiceManager(keyword, keywordPlural string, columns, adminColumns []string) modulebase.ResourceManager {
+	return modulebase.ResourceManager{
+		BaseManager: *modulebase.NewBaseManager("generalservice", "", "", columns, adminColumns),
+		Keyword:     keyword, KeywordPlural: keywordPlural}
+}

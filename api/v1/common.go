@@ -222,3 +222,27 @@ func (ep *Endpoint) SetResourceStatus(is IResourceStatus) {
 func (ep *Endpoint) GetResourceSpec() IResourceSpec {
 	return &ep.Spec
 }
+
+func (gsStatus *GeneralServiceStatus) GetBaseExternalInfo() ExternalInfoBase {
+	return gsStatus.ExternalInfo.ExternalInfoBase
+}
+
+func (gsStatus *GeneralServiceStatus) DeepCopy2() IResourceStatus {
+	return gsStatus.DeepCopy()
+}
+
+func (gsStatus *GeneralServiceStatus) SetBaseExternalInfo(info ExternalInfoBase) {
+	gsStatus.ExternalInfo.ExternalInfoBase = info
+}
+
+func (gs *GeneralService) GetResourceStatus() IResourceStatus {
+	return &gs.Status
+}
+
+func (gs *GeneralService) SetResourceStatus(is IResourceStatus) {
+	gs.Status = *is.(*GeneralServiceStatus)
+}
+
+func (gs *GeneralService) GetResourceSpec() IResourceSpec {
+	return &gs.Spec
+}

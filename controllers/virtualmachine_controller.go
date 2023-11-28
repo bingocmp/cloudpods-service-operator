@@ -80,6 +80,13 @@ func (r *VirtualMachineReconciler) Reconcile(req ctrl.Request) (ctrl.Result, err
 
 	// Running
 	if virtualMachine.Status.Phase == onecloudv1.ResourceRunning || virtualMachine.Status.Phase == onecloudv1.ResourceReady {
+		if virtualMachine.Status.Phase == onecloudv1.ResourceRunning {
+			//make ssh
+			if _, err = remoteVm.MakeSshable(ctx); err != nil {
+				return ctrl.Result{Requeue: true, RequeueAfter: 5 * time.Second}, nil
+			}
+		}
+
 		vmStatus, specPhase, err := r.reconcile(ctx, remoteVm)
 		if err != nil {
 			return dealErr(err)

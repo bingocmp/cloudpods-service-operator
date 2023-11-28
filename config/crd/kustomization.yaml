@@ -6,6 +6,7 @@ resources:
 - bases/onecloud.yunion.io_ansibleplaybooktemplates.yaml
 - bases/onecloud.yunion.io_ansibleplaybooks.yaml
 - bases/onecloud.yunion.io_endpoints.yaml
+- bases/onecloud.yunion.io_generalservices.yaml
 # +kubebuilder:scaffold:crdkustomizeresource
 
 patchesStrategicMerge:

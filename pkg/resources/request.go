@@ -69,14 +69,15 @@ func (ad *OperatorDesc) String() string {
 type Resource string
 
 const (
-	ResourceVM          Resource = "VM"
-	ResourceEIP         Resource = "EIP"
-	ResourceDisk        Resource = "Disk"
-	ResourceAP          Resource = "AP"
-	ResourceEndpoint    Resource = "Endpoint"
-	ResourceSevice      Resource = "Service"
-	ResourceRegion      Resource = "Region"
-	ResourceCachedImage Resource = "CachedImage"
+	ResourceVM             Resource = "VM"
+	ResourceEIP            Resource = "EIP"
+	ResourceDisk           Resource = "Disk"
+	ResourceAP             Resource = "AP"
+	ResourceEndpoint       Resource = "Endpoint"
+	ResourceSevice         Resource = "Service"
+	ResourceRegion         Resource = "Region"
+	ResourceCachedImage    Resource = "CachedImage"
+	ResourceGeneralService Resource = "GeneralService"
 )
 
 // ResourceOperation describe the operation for onecloud resource like create, update, delete and so on.
@@ -99,6 +100,13 @@ const (
 	OperSetSecgroups ResourceOperation = "SetSecgroups"
 	OperStart        ResourceOperation = "Start"
 	OperStop         ResourceOperation = "Stop"
+	OperMakeSshable  ResourceOperation = "MakeSshable"
+	OperSshable      ResourceOperation = "GetSshable"
+
+	GeneralServiceCreate ResourceOperation = "-Create"
+	GeneralServiceDelete ResourceOperation = "-Delete"
+	GeneralServiceUpdate ResourceOperation = "-Update"
+	GeneralServiceGet    ResourceOperation = "-Get"
 )
 
 // Modules describe the correspondence between Resource and modulebase.ResourceManager,
@@ -137,6 +145,9 @@ func (re SRequestErr) IsNotFound(resource Resource) bool {
 		return false
 	}
 	if re.Resource != resource {
+		return false
+	}
+	if !strings.Contains(re.Error(), "no rows in result set") {
 		return false
 	}
 	return true
