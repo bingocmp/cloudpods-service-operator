@@ -141,13 +141,13 @@ type SRequest struct {
 }
 
 func (re SRequestErr) IsNotFound(resource Resource) bool {
+	if strings.Contains(re.Error(), "no rows in result set") {
+		return true
+	}
 	if re.Code != 404 {
 		return false
 	}
 	if re.Resource != resource {
-		return false
-	}
-	if !strings.Contains(re.Error(), "no rows in result set") {
 		return false
 	}
 	return true
